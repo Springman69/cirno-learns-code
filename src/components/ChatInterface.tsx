@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Send, Bot, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import cirnoAvatar from "@/assets/cirno-avatar.jpg";
 
 interface Message {
   id: string;
@@ -66,7 +67,7 @@ export const ChatInterface = () => {
   return (
     <section id="chat-section" className="py-20 bg-background">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl font-bold bg-gradient-primary bg-clip-text text-transparent mb-4">
               Porozmawiaj z Cirno
@@ -76,68 +77,104 @@ export const ChatInterface = () => {
             </p>
           </div>
 
-          <Card className="bg-card/50 backdrop-blur border-ice-light shadow-ice">
-            <div className="h-96 overflow-y-auto p-6 space-y-4">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                >
-                  <div className={`flex gap-3 max-w-[80%] ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                      message.sender === 'user' 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-gradient-primary text-primary-foreground'
-                    }`}>
-                      {message.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
-                    </div>
-                    <div className={`rounded-2xl px-4 py-3 ${
-                      message.sender === 'user'
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-ice-frost text-foreground border border-ice-light'
-                    }`}>
-                      <p className="text-sm">{message.content}</p>
-                    </div>
-                  </div>
+          <div className="grid lg:grid-cols-12 gap-8 items-start">
+            {/* Animowany Awatar Cirno */}
+            <div className="lg:col-span-3 flex justify-center lg:justify-end">
+              <div className="relative">
+                {/* Główny awatar */}
+                <div className="relative w-48 h-48 lg:w-64 lg:h-64">
+                  <div className="absolute inset-0 bg-gradient-primary rounded-full animate-pulse-glow opacity-30"></div>
+                  <img 
+                    src={cirnoAvatar}
+                    alt="Cirno AI Assistant Avatar"
+                    className="relative z-10 w-full h-full object-cover rounded-full border-4 border-ice-light animate-float shadow-glow"
+                  />
+                  
+                  {/* Floating ice crystals around avatar */}
+                  <div className="absolute -top-2 -right-2 w-4 h-4 bg-ice-glow rounded-full animate-sparkle"></div>
+                  <div className="absolute top-1/4 -left-3 w-3 h-3 bg-ice-light rounded-full animate-bounce-gentle"></div>
+                  <div className="absolute bottom-1/4 -right-4 w-2 h-2 bg-primary-glow rounded-full animate-wiggle"></div>
+                  <div className="absolute -bottom-3 left-1/3 w-5 h-5 bg-ice-blue/40 rounded-full animate-sparkle"></div>
                 </div>
-              ))}
-              {isLoading && (
-                <div className="flex gap-3 justify-start">
-                  <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
-                    <Bot className="w-4 h-4 text-primary-foreground" />
-                  </div>
-                  <div className="bg-ice-frost border border-ice-light rounded-2xl px-4 py-3">
-                    <div className="flex gap-1">
-                      <div className="w-2 h-2 bg-ice-blue rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-ice-blue rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-ice-blue rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                
+                {/* Speech bubble when AI is thinking */}
+                {isLoading && (
+                  <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-ice-frost border-2 border-ice-light rounded-2xl px-4 py-2 animate-bounce-gentle">
+                    <div className="text-sm text-ice-blue font-medium">Myślę...</div>
+                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
+                      <div className="border-l-8 border-r-8 border-t-8 border-transparent border-t-ice-light"></div>
                     </div>
                   </div>
-                </div>
-              )}
-            </div>
-            
-            <div className="p-6 border-t border-ice-light/30">
-              <div className="flex gap-2">
-                <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Zadaj pytanie z informatyki lub matematyki..."
-                  onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                  className="border-ice-light focus:ring-ice-blue"
-                  disabled={isLoading}
-                />
-                <Button 
-                  onClick={handleSend} 
-                  disabled={isLoading || !input.trim()}
-                  variant="ice"
-                  size="icon"
-                >
-                  <Send className="w-4 h-4" />
-                </Button>
+                )}
               </div>
             </div>
-          </Card>
+
+            {/* Chat Interface */}
+            <div className="lg:col-span-9">
+              <Card className="bg-card/50 backdrop-blur border-ice-light shadow-ice">
+                <div className="h-96 overflow-y-auto p-6 space-y-4">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex gap-3 ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`flex gap-3 max-w-[80%] ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
+                        <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
+                          message.sender === 'user' 
+                            ? 'bg-primary text-primary-foreground' 
+                            : 'bg-gradient-primary text-primary-foreground'
+                        }`}>
+                          {message.sender === 'user' ? <User className="w-4 h-4" /> : <Bot className="w-4 h-4" />}
+                        </div>
+                        <div className={`rounded-2xl px-4 py-3 ${
+                          message.sender === 'user'
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-ice-frost text-foreground border border-ice-light'
+                        }`}>
+                          <p className="text-sm">{message.content}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {isLoading && (
+                    <div className="flex gap-3 justify-start">
+                      <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center">
+                        <Bot className="w-4 h-4 text-primary-foreground" />
+                      </div>
+                      <div className="bg-ice-frost border border-ice-light rounded-2xl px-4 py-3">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-ice-blue rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-ice-blue rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-ice-blue rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="p-6 border-t border-ice-light/30">
+                  <div className="flex gap-2">
+                    <Input
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder="Zadaj pytanie z informatyki lub matematyki..."
+                      onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+                      className="border-ice-light focus:ring-ice-blue"
+                      disabled={isLoading}
+                    />
+                    <Button 
+                      onClick={handleSend} 
+                      disabled={isLoading || !input.trim()}
+                      variant="ice"
+                      size="icon"
+                    >
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
     </section>
