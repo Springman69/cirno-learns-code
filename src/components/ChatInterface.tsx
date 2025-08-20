@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Send, Bot, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import cirnoAvatar from "@/assets/cirno-avatar.jpg";
+import { AnimatedAvatar, AvatarState } from "@/components/AnimatedAvatar";
 
 interface Message {
   id: string;
@@ -24,7 +24,27 @@ export const ChatInterface = () => {
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [avatarState, setAvatarState] = useState<AvatarState>('idle');
   const { toast } = useToast();
+
+  // Reset avatar to idle after some time
+  useEffect(() => {
+    if (avatarState !== 'idle' && !isLoading) {
+      const timer = setTimeout(() => {
+        setAvatarState('idle');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [avatarState, isLoading]);
+
+  const detectQuestionType = (question: string): AvatarState => {
+    const lowerQuestion = question.toLowerCase();
+    const hardKeywords = ['algorytm', 'złożoność', 'rekurencja', 'całka', 'pochodna', 'macierz', 'prawdopodobieństwo'];
+    const isHardQuestion = hardKeywords.some(keyword => lowerQuestion.includes(keyword));
+    
+    if (isHardQuestion) return 'confused';
+    return 'happy';
+  };
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -36,21 +56,39 @@ export const ChatInterface = () => {
       timestamp: new Date()
     };
 
+    // Determine initial avatar reaction
+    const initialReaction = detectQuestionType(input);
+    setAvatarState(initialReaction);
+
     setMessages(prev => [...prev, userMessage]);
+    const currentInput = input;
     setInput('');
     setIsLoading(true);
+
+    // After a moment, switch to thinking
+    setTimeout(() => {
+      setAvatarState('thinking');
+    }, 1000);
 
     // Simulate AI response
     setTimeout(() => {
       const aiResponse: Message = {
         id: (Date.now() + 1).toString(),
-        content: getAIResponse(input),
+        content: getAIResponse(currentInput),
         sender: 'ai',
         timestamp: new Date()
       };
       setMessages(prev => [...prev, aiResponse]);
       setIsLoading(false);
-    }, 1000);
+      
+      // Switch to speaking when AI responds
+      setAvatarState('speaking');
+      
+      // Then to happy after a moment
+      setTimeout(() => {
+        setAvatarState('happy');
+      }, 1500);
+    }, 2000);
   };
 
   const getAIResponse = (question: string): string => {
@@ -80,33 +118,10 @@ export const ChatInterface = () => {
           <div className="grid lg:grid-cols-12 gap-8 items-start">
             {/* Animowany Awatar Cirno */}
             <div className="lg:col-span-3 flex justify-center lg:justify-end">
-              <div className="relative">
-                {/* Główny awatar */}
-                <div className="relative w-48 h-48 lg:w-64 lg:h-64">
-                  <div className="absolute inset-0 bg-gradient-primary rounded-full animate-pulse-glow opacity-30"></div>
-                  <img 
-                    src={cirnoAvatar}
-                    alt="Cirno AI Assistant Avatar"
-                    className="relative z-10 w-full h-full object-cover rounded-full border-4 border-ice-light animate-float shadow-glow"
-                  />
-                  
-                  {/* Floating ice crystals around avatar */}
-                  <div className="absolute -top-2 -right-2 w-4 h-4 bg-ice-glow rounded-full animate-sparkle"></div>
-                  <div className="absolute top-1/4 -left-3 w-3 h-3 bg-ice-light rounded-full animate-bounce-gentle"></div>
-                  <div className="absolute bottom-1/4 -right-4 w-2 h-2 bg-primary-glow rounded-full animate-wiggle"></div>
-                  <div className="absolute -bottom-3 left-1/3 w-5 h-5 bg-ice-blue/40 rounded-full animate-sparkle"></div>
-                </div>
-                
-                {/* Speech bubble when AI is thinking */}
-                {isLoading && (
-                  <div className="absolute -top-16 left-1/2 transform -translate-x-1/2 bg-ice-frost border-2 border-ice-light rounded-2xl px-4 py-2 animate-bounce-gentle">
-                    <div className="text-sm text-ice-blue font-medium">Myślę...</div>
-                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-full">
-                      <div className="border-l-8 border-r-8 border-t-8 border-transparent border-t-ice-light"></div>
-                    </div>
-                  </div>
-                )}
-              </div>
+              <AnimatedAvatar 
+                state={avatarState} 
+                isLoading={isLoading} 
+              />
             </div>
 
             {/* Chat Interface */}
